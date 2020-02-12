@@ -15,6 +15,7 @@ import net.minecraft.block.Block
 import net.minecraft.block.BlockEntityProvider
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
+import net.minecraft.block.Blocks
 import net.minecraft.block.WallMountedBlock
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
@@ -47,7 +48,6 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.IWorld
 import net.minecraft.world.World
 import net.minecraft.world.WorldView
-import net.minecraft.block.Blocks as MCBlocks
 
 abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float) : Block(settings), BlockCustomBreak, BlockPartProvider, BlockEntityProvider {
 
@@ -143,7 +143,7 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
   }
 
   private fun getStateForSide(oldState: BlockState, vararg side: Direction): BlockState =
-    if (side.isEmpty()) MCBlocks.AIR.defaultState else
+    if (side.isEmpty()) Blocks.AIR.defaultState else
       Direction.values().fold(oldState) { state, s -> state.with(BaseWireProperties.PlacedWires.getValue(s), s in side) }
 
   override fun getStateForNeighborUpdate(state: BlockState, side: Direction, state1: BlockState, world: IWorld, pos: BlockPos, pos1: BlockPos): BlockState {
