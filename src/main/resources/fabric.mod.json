@@ -20,7 +20,7 @@
   },
   "mixins": ["hctm.mixins.json"],
   "depends": {
-    "minecraft": ">=1.16-20w10a",
+    "minecraft": "~1.16-20w21a",
     "fabricloader": ">=0.4.0",
     "fabric": "*",
     "fabric-language-kotlin": ">=1.3.30",

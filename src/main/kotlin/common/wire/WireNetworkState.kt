@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.registry.Registry
 import net.minecraft.world.PersistentState
 import net.minecraft.world.World
-import net.minecraft.world.dimension.Dimension
+import net.minecraft.world.dimension.DimensionType
 import java.util.*
 
 typealias NetNode = Node<NetworkPart<out PartExt>, Nothing?>
@@ -25,7 +25,7 @@ typealias NetLink = Link<NetworkPart<out PartExt>, Nothing?>
 
 typealias TNetNode<T> = Node<NetworkPart<T>, Nothing>
 
-class WireNetworkState(val world: ServerWorld) : PersistentState(getNameForDimension(world.getDimension())) {
+class WireNetworkState(val world: ServerWorld) : PersistentState(nameFor(world.dimension)) {
   var controller = WireNetworkController(::markDirty, world)
 
   override fun toTag(tag: CompoundTag): CompoundTag {
@@ -38,7 +38,7 @@ class WireNetworkState(val world: ServerWorld) : PersistentState(getNameForDimen
   }
 
   companion object {
-    fun getNameForDimension(dimension: Dimension) = "wirenet${dimension.type.suffix}"
+    fun nameFor(dimension: DimensionType) = "wirenet${dimension.suffix}"
   }
 }
 
@@ -393,5 +393,5 @@ class NodeView(world: ServerWorld) {
 
 fun ServerWorld.getWireNetworkState(): WireNetworkState {
   val dimension = getDimension()
-  return persistentStateManager.getOrCreate({ WireNetworkState(this) }, WireNetworkState.getNameForDimension(dimension))
+  return persistentStateManager.getOrCreate({ WireNetworkState(this) }, WireNetworkState.nameFor(dimension))
 }

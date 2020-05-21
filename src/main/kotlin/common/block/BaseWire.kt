@@ -45,8 +45,8 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
-import net.minecraft.world.IWorld
 import net.minecraft.world.World
+import net.minecraft.world.WorldAccess
 import net.minecraft.world.WorldView
 
 abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float) : Block(settings), BlockCustomBreak, BlockPartProvider, BlockEntityProvider {
@@ -114,7 +114,7 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
     return result
   }
 
-  override fun prepare(state: BlockState, world: IWorld, pos: BlockPos, flags: Int) {
+  override fun prepare(state: BlockState, world: WorldAccess, pos: BlockPos, flags: Int) {
     if (!world.isClient && world is ServerWorld)
       world.getWireNetworkState().controller.onBlockChanged(world, pos, state)
   }
@@ -146,7 +146,7 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
     if (side.isEmpty()) Blocks.AIR.defaultState else
       Direction.values().fold(oldState) { state, s -> state.with(BaseWireProperties.PLACED_WIRES.getValue(s), s in side) }
 
-  override fun getStateForNeighborUpdate(state: BlockState, side: Direction, state1: BlockState, world: IWorld, pos: BlockPos, pos1: BlockPos): BlockState {
+  override fun getStateForNeighborUpdate(state: BlockState, side: Direction, state1: BlockState, world: WorldAccess, pos: BlockPos, pos1: BlockPos): BlockState {
     return getStateForSide(state, *WireUtils.getOccupiedSides(state).filter { it != side || getStateForSide(state, it).canPlaceAt(world, pos) }.toTypedArray())
   }
 

@@ -9,11 +9,15 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
+import net.minecraft.util.registry.RegistryKey
 import net.minecraft.world.dimension.DimensionType
 
 fun onDebugNetUpdateRequest(context: PacketContext, buffer: PacketByteBuf) {
   val dim = Identifier(buffer.readString())
-  val world = (context.player as ServerPlayerEntity).getServer()!!.getWorld(DimensionType.byId(dim))
+  val server = (context.player as ServerPlayerEntity).getServer()!!
+  val regKey = RegistryKey.getOrCreate(Registry.DIMENSION_TYPE_KEY, dim)
+  val world = server.getWorld(regKey)
   val wns = world.getWireNetworkState()
   val tag = wns.toTag(CompoundTag())
 
