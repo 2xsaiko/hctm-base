@@ -291,13 +291,13 @@ class Network(val controller: WireNetworkController, val id: UUID) {
     }
     tag.put("nodes", ListTag().also { t -> serializedNodes.forEach { t.add(it) } })
     tag.put("links", ListTag().also { t -> serializedLinks.forEach { t.add(it) } })
-    tag.putUuidNew("id", id)
+    tag.putUuid("id", id)
     return tag
   }
 
   companion object {
     fun fromTag(controller: WireNetworkController, tag: CompoundTag): Network? {
-      val id = tag.getUuidNew("id")
+      val id = tag.getUuid("id")
       val network = Network(controller, id)
       val sNodes = tag.getList("nodes", NbtType.COMPOUND)
       val sLinks = tag.getList("links", NbtType.COMPOUND)

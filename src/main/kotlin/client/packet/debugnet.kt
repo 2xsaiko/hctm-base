@@ -7,13 +7,12 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 import net.minecraft.util.registry.Registry
 import net.minecraft.util.registry.RegistryKey
-import net.minecraft.world.dimension.DimensionType
 
 fun onDebugNetUpdateResponse(context: PacketContext, buffer: PacketByteBuf) {
   val dim = Identifier(buffer.readString())
 
-  val dimRegistry = MinecraftClient.getInstance().server?.method_29174()?.method_29116() ?: return
-  val type = dimRegistry.get(dim) ?: return
+  val server = MinecraftClient.getInstance().server ?: return
+  val type = RegistryKey.of(Registry.DIMENSION, dim)
 
   val tag = buffer.readCompoundTag()!!
 

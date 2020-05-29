@@ -8,28 +8,29 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.registry.Registry
+import net.minecraft.util.registry.RegistryKey
 import net.minecraft.world.World
 import net.minecraft.world.dimension.DimensionType
 
 object ClientNetworkState {
 
-  private val caches = mutableMapOf<DimensionType, Entry>()
+  private val caches = mutableMapOf<RegistryKey<World>, Entry>()
 
   fun request(world: World): WireNetworkController? {
     if (world !is ServerWorld) error("Yeah let's not do that.")
 
-    val dimRegistry = world.server.method_29174().method_29116()
+    val worldKey = world.method_27983()
 
-    if (caches[world.dimension]?.isExpired() != false) {
+    if (caches[worldKey]?.isExpired() != false) {
       val buf = PacketByteBuf(Unpooled.buffer())
-      buf.writeString(dimRegistry.getId(world.dimension)!!.toString())
+      buf.writeString(worldKey.value.toString())
       ClientSidePacketRegistry.INSTANCE.sendToServer(Packets.Server.DEBUG_NET_REQUEST, buf)
     }
 
-    return caches[world.dimension]?.controller
+    return caches[worldKey]?.controller
   }
 
-  fun update(dt: DimensionType, tag: CompoundTag) {
+  fun update(dt: RegistryKey<World>, tag: CompoundTag) {
     caches[dt] = Entry(WireNetworkController.fromTag(tag))
   }
 

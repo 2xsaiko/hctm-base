@@ -16,7 +16,7 @@ import net.minecraft.world.dimension.DimensionType
 fun onDebugNetUpdateRequest(context: PacketContext, buffer: PacketByteBuf) {
   val dim = Identifier(buffer.readString())
   val server = (context.player as ServerPlayerEntity).getServer()!!
-  val regKey = RegistryKey.getOrCreate(Registry.DIMENSION_TYPE_KEY, dim)
+  val regKey = RegistryKey.of(Registry.DIMENSION, dim)
   val world = server.getWorld(regKey)
   val wns = world.getWireNetworkState()
   val tag = wns.toTag(CompoundTag())
