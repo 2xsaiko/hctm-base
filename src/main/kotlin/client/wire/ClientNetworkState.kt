@@ -19,7 +19,7 @@ object ClientNetworkState {
   fun request(world: World): WireNetworkController? {
     if (world !is ServerWorld) error("Yeah let's not do that.")
 
-    val worldKey = world.method_27983()
+    val worldKey = world.registryKey
 
     if (caches[worldKey]?.isExpired() != false) {
       val buf = PacketByteBuf(Unpooled.buffer())
