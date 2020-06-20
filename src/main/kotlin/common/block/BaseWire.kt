@@ -114,7 +114,7 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
     return result
   }
 
-  override fun prepare(state: BlockState, world: WorldAccess, pos: BlockPos, flags: Int) {
+  override fun prepare(state: BlockState, world: WorldAccess, pos: BlockPos, flags: Int, i: Int) {
     if (!world.isClient && world is ServerWorld)
       world.getWireNetworkState().controller.onBlockChanged(world, pos, state)
   }
