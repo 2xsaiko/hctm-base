@@ -36,3 +36,29 @@ fun Direction.rotateClockwise(axis: Direction.Axis): Direction {
     }
   }
 }
+
+fun Direction.rotateCounterClockwise(axis: Direction.Axis): Direction {
+  return when (axis) {
+    X -> when (this) {
+      DOWN -> NORTH
+      UP -> SOUTH
+      NORTH -> UP
+      SOUTH -> DOWN
+      else -> this
+    }
+    Y -> when (this) {
+      NORTH -> WEST
+      SOUTH -> EAST
+      WEST -> SOUTH
+      EAST -> NORTH
+      else -> this
+    }
+    Z -> when (this) {
+      DOWN -> EAST
+      UP -> WEST
+      WEST -> DOWN
+      EAST -> UP
+      else -> this
+    }
+  }
+}
