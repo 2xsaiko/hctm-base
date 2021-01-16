@@ -14,8 +14,8 @@ import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
 import net.minecraft.block.BlockEntityProvider
 import net.minecraft.block.BlockState
-import net.minecraft.block.ShapeContext
 import net.minecraft.block.Blocks
+import net.minecraft.block.ShapeContext
 import net.minecraft.block.WallMountedBlock
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
@@ -84,7 +84,7 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
     return getShape(state)
   }
 
-  override fun getRayTraceShape(state: BlockState, view: BlockView, pos: BlockPos): VoxelShape {
+  override fun getRaycastShape(state: BlockState, world: BlockView?, pos: BlockPos?): VoxelShape {
     return getShape(state)
   }
 
@@ -334,7 +334,7 @@ object WireUtils {
     return BaseWireProperties.PLACED_WIRES.entries.asSequence()
       .filter { (_, prop) -> state[prop] }
       .map { (a, _) -> Pair(a, block.boxes.getValue(a)) }
-      .map { (a, s) -> Pair(a, s.rayTrace(from, to, pos)) }
+      .map { (a, s) -> Pair(a, s.raycast(from, to, pos)) }
       .filter { it.second != null }
       .minBy { (_, hitResult) -> hitResult!!.pos.squaredDistanceTo(from) }
       as Pair<Direction, BlockHitResult>?

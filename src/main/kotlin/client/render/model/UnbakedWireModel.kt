@@ -14,7 +14,7 @@ import net.dblsaiko.hctm.common.util.ext.rotateClockwise
 import net.dblsaiko.qcommon.croco.Mat4
 import net.dblsaiko.qcommon.croco.Vec2
 import net.dblsaiko.qcommon.croco.Vec3
-import net.fabricmc.fabric.api.renderer.v1.RendererAccess
+import net.fabricmc.fabric.api.renderer.v1.Renderer
 import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView
@@ -47,6 +47,7 @@ import java.util.function.Function
 import kotlin.math.atan2
 
 class UnbakedWireModel(
+  val renderer: Renderer,
   val texture: Identifier,
   val cableWidth: Float,
   val cableHeight: Float,
@@ -98,12 +99,11 @@ class UnbakedWireModel(
   private val innerArm2Side1Uv = arm2Side1Uv
   private val innerArm2Side2Uv = arm2Side2Uv
 
-  val renderer = RendererAccess.INSTANCE.renderer
   val builder = renderer.meshBuilder()
   val finder = renderer.materialFinder()
 
   override fun bake(ml: ModelLoader, getTexture: Function<SpriteIdentifier, Sprite>, settings: ModelBakeSettings, p3: Identifier): BakedModel? {
-    val sid = SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEX, texture)
+    val sid = SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, texture)
     val parts = cache.computeIfAbsent(CacheKey(cableWidth, cableHeight, textureSize)) {
       finder.clear()
       val standard = finder.find()
@@ -321,7 +321,7 @@ class UnbakedWireModel(
   }
 
   override fun getTextureDependencies(function: Function<Identifier, UnbakedModel>?, set: MutableSet<com.mojang.datafixers.util.Pair<String, String>>?): Collection<SpriteIdentifier> {
-    return setOf(SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEX, texture))
+    return setOf(SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, texture))
   }
 
   override fun getModelDependencies() = emptySet<Identifier>()
@@ -396,12 +396,14 @@ private fun quad(face: Direction, xy1: Vec2, xy2: Vec2, depth: Float, uv: Vec2, 
     .let { l -> if (flags and MutableQuadView.BAKE_FLIP_V != 0) l.reversed() else l }
     .let { (it + it).subList(flags and 3, (flags and 3) + 4) }
 
-  return listOf(Quad(
-    Vertex(toVec3(xy1.x, xy1.y), uv1.x, uv1.y),
-    Vertex(toVec3(xy2.x, xy1.y), uv2.x, uv2.y),
-    Vertex(toVec3(xy2.x, xy2.y), uv3.x, uv3.y),
-    Vertex(toVec3(xy1.x, xy2.y), uv4.x, uv4.y)
-  ).sort(face))
+  return listOf(
+    Quad(
+      Vertex(toVec3(xy1.x, xy1.y), uv1.x, uv1.y),
+      Vertex(toVec3(xy2.x, xy1.y), uv2.x, uv2.y),
+      Vertex(toVec3(xy2.x, xy2.y), uv3.x, uv3.y),
+      Vertex(toVec3(xy1.x, xy2.y), uv4.x, uv4.y)
+    ).sort(face)
+  )
 }
 
 private fun box(min: Vec3, max: Vec3, down: UvCoords? = null, up: UvCoords? = null, north: UvCoords? = null, south: UvCoords? = null, west: UvCoords? = null, east: UvCoords? = null): List<Quad> {
