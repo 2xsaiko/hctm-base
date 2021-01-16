@@ -365,10 +365,12 @@ private data class Quad(val v1: Vertex, val v2: Vertex, val v3: Vertex, val v4: 
 
   fun into(qe: QuadEmitter, mat: RenderMaterial) {
     qe.spriteColor(0, -1, -1, -1, -1)
+
     for ((i, q) in listOf(v1, v2, v3, v4).withIndex()) {
       qe.pos(i, q.x, q.y, q.z)
-      qe.sprite(i, 0, q.u, q.v)
+      qe.spriteFix(i, 0, q.u, q.v)
     }
+
     qe.material(mat)
     qe.emit()
   }

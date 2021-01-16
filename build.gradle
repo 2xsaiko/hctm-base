@@ -67,6 +67,11 @@ dependencies {
     modRuntime(group: 'io.github.prospector', name: 'modmenu', version: '1.11.2+build.6') {
         exclude module: 'fabric-api'
     }
+
+    // For model bake failure fix with Canvas
+    modCompileOnly("grondag:canvas-mc116:1.0.996") {
+        transitive false
+    }
 }
 
 processResources {
