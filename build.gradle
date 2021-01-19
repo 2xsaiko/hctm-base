@@ -69,7 +69,10 @@ dependencies {
     }
 
     // For model bake failure fix with Canvas
-    modCompileOnly("grondag:canvas-mc116:1.0.996") {
+    modCompileOnly("grondag:canvas-mc116:1.0.1267") {
+        transitive false
+    }
+    modCompileOnly("grondag:frex-mc116:4.5.201") {
         transitive false
     }
 }

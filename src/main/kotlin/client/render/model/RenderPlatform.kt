@@ -29,7 +29,7 @@ object CanvasRenderPlatform : RenderPlatform {
 
   override fun spriteFix(qe: QuadEmitter, vertexIndex: Int, spriteIndex: Int, u: Float, v: Float) {
     qe as CanvasMutableQuadViewImpl
-    qe.spriteFloat(vertexIndex, spriteIndex, u, v)
+    qe.spriteFloat(vertexIndex, u, v)
   }
 
 }
