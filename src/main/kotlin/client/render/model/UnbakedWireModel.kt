@@ -100,17 +100,20 @@ class UnbakedWireModel(
   private val innerArm2Side2Uv = arm2Side2Uv
 
   val builder = renderer.meshBuilder()
-  val finder = renderer.materialFinder()
 
-  override fun bake(ml: ModelLoader, getTexture: Function<SpriteIdentifier, Sprite>, settings: ModelBakeSettings, p3: Identifier): BakedModel? {
+  private val materials = run {
+    val finder = renderer.materialFinder()
+    val standard = finder.find()
+    finder.disableAo(0, true)
+    val corner = finder.find()
+
+    Materials(standard, corner)
+  }
+
+  override fun bake(ml: ModelLoader, getTexture: Function<SpriteIdentifier, Sprite>, settings: ModelBakeSettings, p3: Identifier): BakedModel {
     val sid = SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, texture)
     val parts = cache.computeIfAbsent(CacheKey(cableWidth, cableHeight, textureSize)) {
-      finder.clear()
-      val standard = finder.find()
-      finder.disableAo(0, true)
-      val corner = finder.find()
-
-      generateParts(RenderData(Materials(standard, corner)))
+      generateParts(RenderData(this.materials))
     }
 
     return WireModel(getTexture.apply(sid), parts)
@@ -221,7 +224,6 @@ class UnbakedWireModel(
           ).transform(mat).into(builder.emitter, d.materials.standard)
         }
         CORNER -> {
-          finder.disableAo(0, true)
           box(
             Vec3(armLength, 0f, 1f),
             Vec3(1 - armLength, cableHeight, 1 + cableHeight),
@@ -230,7 +232,6 @@ class UnbakedWireModel(
             west = UvCoords(cornerSide1Uv, cableHeight / scaleFactor, cableHeight / scaleFactor, MutableQuadView.BAKE_FLIP_V),
             east = UvCoords(cornerSide2Uv, cableHeight / scaleFactor, cableHeight / scaleFactor, MutableQuadView.BAKE_FLIP_V)
           ).transform(mat).into(builder.emitter, d.materials.corner)
-          finder.clear()
         }
         UNCONNECTED, UNCONNECTED_CROSSING -> {
           val coords = UvCoords(
