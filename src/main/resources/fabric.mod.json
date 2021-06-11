@@ -20,12 +20,12 @@
   },
   "mixins": ["hctm.mixins.json"],
   "depends": {
-    "minecraft": "~1.16.2",
+    "minecraft": "~1.17",
     "fabricloader": ">=0.4.0",
     "fabric": "*",
     "fabric-language-kotlin": ">=1.4",
     "qcommon-cfg-core": ">=2.0.0",
     "qcommon-croco": ">=2.1.0",
-    "libaddict": "~0.2.0"
+    "libaddict": ">=0.3.0"
   }
 }

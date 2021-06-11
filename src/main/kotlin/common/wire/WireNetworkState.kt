@@ -7,9 +7,9 @@ import net.dblsaiko.hctm.common.graph.Node
 import net.fabricmc.fabric.api.util.NbtType
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.ListTag
-import net.minecraft.nbt.Tag
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
+import net.minecraft.nbt.NbtList
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
@@ -25,21 +25,23 @@ typealias NetLink = Link<NetworkPart<out PartExt>, Nothing?>
 
 typealias TNetNode<T> = Node<NetworkPart<T>, Nothing>
 
-class WireNetworkState(val world: ServerWorld) : PersistentState(nameFor(world.dimension)) {
-  var controller = WireNetworkController(::markDirty, world)
+class WireNetworkState(val world: ServerWorld) : PersistentState() {
+    var controller = WireNetworkController(::markDirty, world)
 
-  override fun toTag(tag: CompoundTag): CompoundTag {
-    return tag.copyFrom(controller.toTag(world))
-  }
+    override fun writeNbt(nbt: NbtCompound): NbtCompound {
+        return nbt.copyFrom(controller.toTag(world))
+    }
 
-  override fun fromTag(tag: CompoundTag) {
-    controller = WireNetworkController.fromTag(tag, world)
-    controller.changeListener = ::markDirty
-  }
+    companion object {
+        fun load(tag: NbtCompound, world: ServerWorld): WireNetworkState {
+            val state = WireNetworkState(world)
+            state.controller = WireNetworkController.fromTag(tag, world)
+            state.controller.changeListener = state::markDirty
+            return state
+        }
 
-  companion object {
-    fun nameFor(dimension: DimensionType) = "wirenet${dimension.suffix}"
-  }
+        fun nameFor(dimension: DimensionType) = "wirenet${dimension.suffix}"
+    }
 }
 
 class WireNetworkController(var changeListener: () -> Unit = {}, internal val world: ServerWorld? = null) {
@@ -149,28 +151,28 @@ class WireNetworkController(var changeListener: () -> Unit = {}, internal val wo
     }
   }
 
-  fun cleanup() {
-    for (net in networks.values.toSet()) {
-      if (net.getNodes().isEmpty()) {
-        destroyNetwork(net.id)
-      }
+    fun cleanup() {
+        for (net in networks.values.toSet()) {
+            if (net.getNodes().isEmpty()) {
+                destroyNetwork(net.id)
+            }
+        }
     }
-  }
 
-  fun toTag(world: World): CompoundTag {
-    val tag = CompoundTag()
-    val list = ListTag()
-    networks.values.map { it.toTag(world, CompoundTag()) }.forEach { list.add(it) }
-    tag.put("networks", list)
-    return tag
-  }
+    fun toTag(world: World): NbtCompound {
+        val tag = NbtCompound()
+        val list = NbtList()
+        networks.values.map { it.toTag(world, NbtCompound()) }.forEach { list.add(it) }
+        tag.put("networks", list)
+        return tag
+    }
 
-  fun scheduleUpdate(node: Node<NetworkPart<out PartExt>, Nothing?>) {
-    changed += node
-  }
+    fun scheduleUpdate(node: Node<NetworkPart<out PartExt>, Nothing?>) {
+        changed += node
+    }
 
-  fun flushUpdates() {
-    while (changed.isNotEmpty()) {
+    fun flushUpdates() {
+        while (changed.isNotEmpty()) {
       val n = changed.first()
       world?.also { n.data.ext.onChanged(n, world, n.data.pos) }
       changed -= n
@@ -178,17 +180,17 @@ class WireNetworkController(var changeListener: () -> Unit = {}, internal val wo
   }
 
   companion object {
-    fun fromTag(tag: CompoundTag, world: ServerWorld? = null): WireNetworkController {
-      val controller = WireNetworkController(world = world)
+      fun fromTag(tag: NbtCompound, world: ServerWorld? = null): WireNetworkController {
+          val controller = WireNetworkController(world = world)
 
-      val sNetworks = tag.getList("networks", NbtType.COMPOUND)
-      for (sNetwork in sNetworks.map { it as CompoundTag }) {
-        val net = Network.fromTag(controller, sNetwork) ?: continue
-        controller.networks += net.id to net
-      }
-      controller.rebuildRefs()
-      controller.cleanup()
-      return controller
+          val sNetworks = tag.getList("networks", NbtType.COMPOUND)
+          for (sNetwork in sNetworks.map { it as NbtCompound }) {
+              val net = Network.fromTag(controller, sNetwork) ?: continue
+              controller.networks += net.id to net
+          }
+          controller.rebuildRefs()
+          controller.cleanup()
+          return controller
     }
   }
 
@@ -266,61 +268,61 @@ class Network(val controller: WireNetworkController, val id: UUID) {
     return emptySet()
   }
 
-  fun rebuildRefs() {
-    controller.changeListener()
-    nodesInPos.clear()
-    for (node in graph.nodes) {
-      nodesInPos.put(node.data.pos, node)
+    fun rebuildRefs() {
+        controller.changeListener()
+        nodesInPos.clear()
+        for (node in graph.nodes) {
+            nodesInPos.put(node.data.pos, node)
+        }
     }
-  }
 
-  fun toTag(world: World, tag: CompoundTag): CompoundTag {
-    val serializedNodes = mutableListOf<CompoundTag>()
-    val serializedLinks = mutableListOf<CompoundTag>()
-    val nodes = graph.nodes.toList()
-    val n1 = nodes.withIndex().associate { it.value to it.index }
-    for (node in nodes) {
-      serializedNodes += node.data.toTag(controller.getBlockType(world, node), CompoundTag())
+    fun toTag(world: World, tag: NbtCompound): NbtCompound {
+        val serializedNodes = mutableListOf<NbtCompound>()
+        val serializedLinks = mutableListOf<NbtCompound>()
+        val nodes = graph.nodes.toList()
+        val n1 = nodes.withIndex().associate { it.value to it.index }
+        for (node in nodes) {
+            serializedNodes += node.data.toTag(controller.getBlockType(world, node), NbtCompound())
+        }
+        for (link in nodes.flatMap { it.connections }.distinct()) {
+            val sLink = NbtCompound()
+            sLink.putInt("first", n1.getValue(link.first))
+            sLink.putInt("second", n1.getValue(link.second))
+            // sLink.put("data", link.data.toTag())
+            serializedLinks += sLink
+        }
+        tag.put("nodes", NbtList().also { t -> serializedNodes.forEach { t.add(it) } })
+        tag.put("links", NbtList().also { t -> serializedLinks.forEach { t.add(it) } })
+        tag.putUuid("id", id)
+        return tag
     }
-    for (link in nodes.flatMap { it.connections }.distinct()) {
-      val sLink = CompoundTag()
-      sLink.putInt("first", n1.getValue(link.first))
-      sLink.putInt("second", n1.getValue(link.second))
-      // sLink.put("data", link.data.toTag())
-      serializedLinks += sLink
-    }
-    tag.put("nodes", ListTag().also { t -> serializedNodes.forEach { t.add(it) } })
-    tag.put("links", ListTag().also { t -> serializedLinks.forEach { t.add(it) } })
-    tag.putUuid("id", id)
-    return tag
-  }
 
   companion object {
-    fun fromTag(controller: WireNetworkController, tag: CompoundTag): Network? {
-      val id = tag.getUuid("id")
-      val network = Network(controller, id)
-      val sNodes = tag.getList("nodes", NbtType.COMPOUND)
-      val sLinks = tag.getList("links", NbtType.COMPOUND)
+      fun fromTag(controller: WireNetworkController, tag: NbtCompound): Network? {
+          val id = tag.getUuid("id")
+          val network = Network(controller, id)
+          val sNodes = tag.getList("nodes", NbtType.COMPOUND)
+          val sLinks = tag.getList("links", NbtType.COMPOUND)
 
-      val nodes = mutableListOf<NetNode?>()
+          val nodes = mutableListOf<NetNode?>()
 
-      for (node in sNodes.map { it as CompoundTag }) {
-        val part = NetworkPart.fromTag(node)
-        if (part == null) {
-          nodes += null as NetNode?
-          continue
-        }
-        nodes += network.createNode(part.pos, part.ext)
-      }
+          for (node in sNodes.map { it as NbtCompound }) {
+              val part = NetworkPart.fromTag(node)
+              if (part == null) {
+                  nodes += null as NetNode?
+                  continue
+              }
+              nodes += network.createNode(part.pos, part.ext)
+          }
 
-      for (link in sLinks.map { it as CompoundTag }) {
-        val first = nodes[link.getInt("first")]
-        val second = nodes[link.getInt("second")]
-        // val data = /* something */
-        if (first != null && second != null) {
-          network.graph.link(first, second, null)
-        }
-      }
+          for (link in sLinks.map { it as NbtCompound }) {
+              val first = nodes[link.getInt("first")]
+              val second = nodes[link.getInt("second")]
+              // val data = /* something */
+              if (first != null && second != null) {
+                  network.graph.link(first, second, null)
+              }
+          }
 
       network.rebuildRefs()
 
@@ -331,32 +333,32 @@ class Network(val controller: WireNetworkController, val id: UUID) {
 }
 
 data class NetworkPart<T : PartExt>(var pos: BlockPos, val ext: T) {
-  fun toTag(block: Block, tag: CompoundTag): CompoundTag {
-    tag.putInt("x", pos.x)
-    tag.putInt("y", pos.y)
-    tag.putInt("z", pos.z)
-    tag.put("ext", ext.toTag())
-    tag.putString("block", Registry.BLOCK.getId(block).toString())
-    return tag
-  }
+    fun toTag(block: Block, tag: NbtCompound): NbtCompound {
+        tag.putInt("x", pos.x)
+        tag.putInt("y", pos.y)
+        tag.putInt("z", pos.z)
+        tag.put("ext", ext.toTag())
+        tag.putString("block", Registry.BLOCK.getId(block).toString())
+        return tag
+    }
 
   companion object {
-    fun fromTag(tag: CompoundTag): NetworkPart<PartExt>? {
-      val block = Registry.BLOCK[Identifier(tag.getString("block"))]
-      val extTag = tag["ext"]
-      if (block is BlockPartProvider && extTag != null) {
-        val ext = block.createExtFromTag(extTag) ?: return null
-        val pos = BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"))
-        return NetworkPart(pos, ext)
-      } else return null
-    }
+      fun fromTag(tag: NbtCompound): NetworkPart<PartExt>? {
+          val block = Registry.BLOCK[Identifier(tag.getString("block"))]
+          val extTag = tag["ext"]
+          if (block is BlockPartProvider && extTag != null) {
+              val ext = block.createExtFromTag(extTag) ?: return null
+              val pos = BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"))
+              return NetworkPart(pos, ext)
+          } else return null
+      }
   }
 }
 
 interface BlockPartProvider {
   fun getPartsInBlock(world: World, pos: BlockPos, state: BlockState): Set<PartExt>
 
-  fun createExtFromTag(tag: Tag): PartExt?
+    fun createExtFromTag(tag: NbtElement): PartExt?
 }
 
 /**
@@ -371,12 +373,11 @@ interface PartExt {
    */
   fun tryConnect(self: NetNode, world: ServerWorld, pos: BlockPos, nv: NodeView): Set<NetNode>
 
-  fun toTag(): Tag
+    fun toTag(): NbtElement
 
   /**
    * Node created, removed, connected, disconnected
    */
-  @JvmDefault
   fun onChanged(self: NetNode, world: ServerWorld, pos: BlockPos) {
   }
 
@@ -392,6 +393,10 @@ class NodeView(world: ServerWorld) {
 }
 
 fun ServerWorld.getWireNetworkState(): WireNetworkState {
-  val dimension = getDimension()
-  return persistentStateManager.getOrCreate({ WireNetworkState(this) }, WireNetworkState.nameFor(dimension))
+    val dimension = getDimension()
+    return persistentStateManager.getOrCreate(
+        { WireNetworkState.load(it, this) },
+        { WireNetworkState(this) },
+        WireNetworkState.nameFor(dimension)
+    )
 }

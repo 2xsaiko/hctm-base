@@ -23,9 +23,9 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
-import net.minecraft.nbt.ByteTag
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.Tag
+import net.minecraft.nbt.NbtByte
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
@@ -123,7 +123,7 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
     return WireUtils.getOccupiedSides(state).flatMap(::createPartExtsFromSide).toSet()
   }
 
-  abstract override fun createBlockEntity(view: BlockView): BaseWireBlockEntity
+    abstract override fun createBlockEntity(pos: BlockPos, state: BlockState): BaseWireBlockEntity
 
   protected abstract fun createPartExtsFromSide(side: Direction): Set<PartExt>
 
@@ -163,43 +163,43 @@ abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float
 
 abstract class SingleBaseWireBlock(settings: AbstractBlock.Settings, height: Float) : BaseWireBlock(settings, height) {
 
-  override fun createExtFromTag(tag: Tag): PartExt? {
-    return (tag as? ByteTag)
-      ?.takeIf { it.int in 0 until 6 }
-      ?.let { createPartExtFromSide(Direction.byId(it.int)) }
-  }
+    override fun createExtFromTag(tag: NbtElement): PartExt? {
+        return (tag as? NbtByte)
+            ?.takeIf { it.intValue() in 0 until 6 }
+            ?.let { createPartExtFromSide(Direction.byId(it.intValue())) }
+    }
 
-  override fun createPartExtsFromSide(side: Direction): Set<PartExt> =
-    setOf(createPartExtFromSide(side))
+    override fun createPartExtsFromSide(side: Direction): Set<PartExt> =
+        setOf(createPartExtFromSide(side))
 
-  protected abstract fun createPartExtFromSide(side: Direction): PartExt
+    protected abstract fun createPartExtFromSide(side: Direction): PartExt
 
 }
 
-open class BaseWireBlockEntity(type: BlockEntityType<out BlockEntity>) : BlockEntity(type), BlockEntityClientSerializable {
+open class BaseWireBlockEntity(type: BlockEntityType<out BlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state), BlockEntityClientSerializable {
 
-  var connections: Set<WireRepr> = emptySet()
-    private set
+    var connections: Set<WireRepr> = emptySet()
+        private set
 
-  override fun toTag(tag: CompoundTag): CompoundTag {
-    tag.putLong("c", serConnections())
-    return super.toTag(tag)
-  }
+    override fun writeNbt(tag: NbtCompound): NbtCompound {
+        tag.putLong("c", serConnections())
+        return super.writeNbt(tag)
+    }
 
-  override fun fromTag(state: BlockState, tag: CompoundTag) {
-    super.fromTag(state, tag)
-    deserConnections(tag.getLong("c"))
-  }
+    override fun readNbt(tag: NbtCompound) {
+        super.readNbt(tag)
+        deserConnections(tag.getLong("c"))
+    }
 
-  override fun toClientTag(tag: CompoundTag): CompoundTag {
-    tag.putLong("c", serConnections())
-    return tag
-  }
+    override fun toClientTag(tag: NbtCompound): NbtCompound {
+        tag.putLong("c", serConnections())
+        return tag
+    }
 
-  override fun fromClientTag(tag: CompoundTag) {
-    deserConnections(tag.getLong("c"))
-    getWorld()?.updateListeners(getPos(), cachedState, cachedState, 3)
-  }
+    override fun fromClientTag(tag: NbtCompound) {
+        deserConnections(tag.getLong("c"))
+        getWorld()?.updateListeners(getPos(), cachedState, cachedState, 3)
+    }
 
   // data structure:
   // 2 bits for ConnectionType
@@ -332,11 +332,11 @@ object WireUtils {
     val block = state.block as BaseWireBlock
 
     return BaseWireProperties.PLACED_WIRES.entries.asSequence()
-      .filter { (_, prop) -> state[prop] }
-      .map { (a, _) -> Pair(a, block.boxes.getValue(a)) }
-      .map { (a, s) -> Pair(a, s.raycast(from, to, pos)) }
-      .filter { it.second != null }
-      .minBy { (_, hitResult) -> hitResult!!.pos.squaredDistanceTo(from) }
+        .filter { (_, prop) -> state[prop] }
+        .map { (a, _) -> Pair(a, block.boxes.getValue(a)) }
+        .map { (a, s) -> Pair(a, s.raycast(from, to, pos)) }
+        .filter { it.second != null }
+        .minByOrNull { (_, hitResult) -> hitResult!!.pos.squaredDistanceTo(from) }
       as Pair<Direction, BlockHitResult>?
   }
 

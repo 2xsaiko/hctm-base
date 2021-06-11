@@ -3,14 +3,12 @@ package net.dblsaiko.hctm.client.wire
 import io.netty.buffer.Unpooled
 import net.dblsaiko.hctm.common.init.Packets
 import net.dblsaiko.hctm.common.wire.WireNetworkController
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
-import net.minecraft.nbt.CompoundTag
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.registry.Registry
 import net.minecraft.util.registry.RegistryKey
 import net.minecraft.world.World
-import net.minecraft.world.dimension.DimensionType
 
 object ClientNetworkState {
 
@@ -23,16 +21,16 @@ object ClientNetworkState {
 
     if (caches[worldKey]?.isExpired() != false) {
       val buf = PacketByteBuf(Unpooled.buffer())
-      buf.writeString(worldKey.value.toString())
-      ClientSidePacketRegistry.INSTANCE.sendToServer(Packets.Server.DEBUG_NET_REQUEST, buf)
+        buf.writeString(worldKey.value.toString())
+        ClientPlayNetworking.send(Packets.Server.DEBUG_NET_REQUEST, buf)
     }
 
     return caches[worldKey]?.controller
   }
 
-  fun update(dt: RegistryKey<World>, tag: CompoundTag) {
-    caches[dt] = Entry(WireNetworkController.fromTag(tag))
-  }
+    fun update(dt: RegistryKey<World>, tag: NbtCompound) {
+        caches[dt] = Entry(WireNetworkController.fromTag(tag))
+    }
 
 }
 

@@ -10,14 +10,18 @@ import net.minecraft.world.World
  */
 interface BlockBundledCableIo {
 
-  @JvmDefault
-  fun canBundledConnectTo(state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction): Boolean = false
+    @JvmDefault
+    fun canBundledConnectTo(state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction): Boolean = false
 
-  @JvmDefault
-  fun getBundledOutput(state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction): UShort = 0u
+    @JvmDefault
+    fun getBundledOutput(state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction): UShort = 0u
 
-  @JvmDefault
-  fun onBundledInputChange(data: UShort, state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction) {
-  }
+    @JvmDefault
+    fun onBundledInputChange(data: UShort, state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction) {
+    }
+
+    @JvmDefault
+    fun onBundledInputChange(mask: UShort, bit: UShort, state: BlockState, world: World, pos: BlockPos, side: Direction, edge: Direction) {
+    }
 
 }
