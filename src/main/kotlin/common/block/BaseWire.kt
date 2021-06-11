@@ -51,113 +51,113 @@ import net.minecraft.world.WorldView
 
 abstract class BaseWireBlock(settings: AbstractBlock.Settings, val height: Float) : Block(settings), BlockCustomBreak, BlockPartProvider, BlockEntityProvider {
 
-  val boxes = WireUtils.generateShapes(height.toDouble())
+    val boxes = WireUtils.generateShapes(height.toDouble())
 
-  init {
-    defaultState =
-      BaseWireProperties.PLACED_WIRES.values.fold(defaultState) { state, prop -> state.with(prop, false) }
-  }
-
-  override fun appendProperties(b: Builder<Block, BlockState>) {
-    super.appendProperties(b)
-    for (prop in BaseWireProperties.PLACED_WIRES.values) {
-      b.add(prop)
-    }
-  }
-
-  override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
-    return super.getPlacementState(ctx)?.with(BaseWireProperties.PLACED_WIRES.getValue(ctx.side.opposite), true)
-  }
-
-  override fun canPlaceAt(state: BlockState, world: WorldView, pos: BlockPos): Boolean {
-    return WireUtils.getOccupiedSides(state).all { side -> WallMountedBlock.canPlaceAt(world, pos, side) }
-  }
-
-  private fun getShape(state: BlockState): VoxelShape {
-    return BaseWireProperties.PLACED_WIRES.entries
-      .filter { (_, prop) -> state[prop] }
-      .map { (a, _) -> boxes.getValue(a) }
-      .fold(VoxelShapes.empty(), VoxelShapes::union)
-  }
-
-  override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape {
-    return getShape(state)
-  }
-
-  override fun getRaycastShape(state: BlockState, world: BlockView?, pos: BlockPos?): VoxelShape {
-    return getShape(state)
-  }
-
-  override fun tryBreak(state: BlockState, pos: BlockPos, world: World, player: PlayerEntity, blockEntity: BlockEntity?): Boolean {
-    if (WireUtils.getOccupiedSides(state).size < 2) return true
-
-    val dist = if (player.isCreative) 5.0f else 4.5f
-    val from = player.getCameraPosVec(0f)
-    val dir = player.getRotationVec(0f)
-    val to = from.add(dir.x * dist, dir.y * dist, dir.z * dist)
-    val (side, _) = WireUtils.rayTrace(state, pos, from, to) ?: return true
-
-    breakPart(state, pos, world, player, side, blockEntity)
-    return false
-  }
-
-  private fun breakPart(state: BlockState, pos: BlockPos, world: World, player: PlayerEntity, side: Direction, blockEntity: BlockEntity?): Boolean {
-    if (!state[BaseWireProperties.PLACED_WIRES.getValue(side)]) return false
-
-    val result = world.setBlockState(pos, state.with(BaseWireProperties.PLACED_WIRES.getValue(side), false))
-
-    if (result) {
-      onBreak(world, pos, getStateForSide(state, side), player) // particle
-      afterBreak(world, player, pos, getStateForSide(state, side), blockEntity, player.mainHandStack.copy())
+    init {
+        defaultState =
+            BaseWireProperties.PLACED_WIRES.values.fold(defaultState) { state, prop -> state.with(prop, false) }
     }
 
-    return result
-  }
+    override fun appendProperties(b: Builder<Block, BlockState>) {
+        super.appendProperties(b)
+        for (prop in BaseWireProperties.PLACED_WIRES.values) {
+            b.add(prop)
+        }
+    }
 
-  override fun prepare(state: BlockState, world: WorldAccess, pos: BlockPos, flags: Int, i: Int) {
-    if (!world.isClient && world is ServerWorld)
-      world.getWireNetworkState().controller.onBlockChanged(world, pos, state)
-  }
+    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
+        return super.getPlacementState(ctx)?.with(BaseWireProperties.PLACED_WIRES.getValue(ctx.side.opposite), true)
+    }
 
-  override fun getPartsInBlock(world: World, pos: BlockPos, state: BlockState): Set<PartExt> {
-    return WireUtils.getOccupiedSides(state).flatMap(::createPartExtsFromSide).toSet()
-  }
+    override fun canPlaceAt(state: BlockState, world: WorldView, pos: BlockPos): Boolean {
+        return WireUtils.getOccupiedSides(state).all { side -> WallMountedBlock.canPlaceAt(world, pos, side) }
+    }
+
+    private fun getShape(state: BlockState): VoxelShape {
+        return BaseWireProperties.PLACED_WIRES.entries
+            .filter { (_, prop) -> state[prop] }
+            .map { (a, _) -> boxes.getValue(a) }
+            .fold(VoxelShapes.empty(), VoxelShapes::union)
+    }
+
+    override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape {
+        return getShape(state)
+    }
+
+    override fun getRaycastShape(state: BlockState, world: BlockView?, pos: BlockPos?): VoxelShape {
+        return getShape(state)
+    }
+
+    override fun tryBreak(state: BlockState, pos: BlockPos, world: World, player: PlayerEntity, blockEntity: BlockEntity?): Boolean {
+        if (WireUtils.getOccupiedSides(state).size < 2) return true
+
+        val dist = if (player.isCreative) 5.0f else 4.5f
+        val from = player.getCameraPosVec(0f)
+        val dir = player.getRotationVec(0f)
+        val to = from.add(dir.x * dist, dir.y * dist, dir.z * dist)
+        val (side, _) = WireUtils.rayTrace(state, pos, from, to) ?: return true
+
+        breakPart(state, pos, world, player, side, blockEntity)
+        return false
+    }
+
+    private fun breakPart(state: BlockState, pos: BlockPos, world: World, player: PlayerEntity, side: Direction, blockEntity: BlockEntity?): Boolean {
+        if (!state[BaseWireProperties.PLACED_WIRES.getValue(side)]) return false
+
+        val result = world.setBlockState(pos, state.with(BaseWireProperties.PLACED_WIRES.getValue(side), false))
+
+        if (result) {
+            onBreak(world, pos, getStateForSide(state, side), player) // particle
+            afterBreak(world, player, pos, getStateForSide(state, side), blockEntity, player.mainHandStack.copy())
+        }
+
+        return result
+    }
+
+    override fun prepare(state: BlockState, world: WorldAccess, pos: BlockPos, flags: Int, i: Int) {
+        if (!world.isClient && world is ServerWorld)
+            world.getWireNetworkState().controller.onBlockChanged(world, pos, state)
+    }
+
+    override fun getPartsInBlock(world: World, pos: BlockPos, state: BlockState): Set<PartExt> {
+        return WireUtils.getOccupiedSides(state).flatMap(::createPartExtsFromSide).toSet()
+    }
 
     abstract override fun createBlockEntity(pos: BlockPos, state: BlockState): BaseWireBlockEntity
 
-  protected abstract fun createPartExtsFromSide(side: Direction): Set<PartExt>
+    protected abstract fun createPartExtsFromSide(side: Direction): Set<PartExt>
 
-  open fun mustConnectInternally() = false
+    open fun mustConnectInternally() = false
 
-  // TODO use this
-  fun validateIntegrity(state: BlockState): Boolean {
-    if (mustConnectInternally()) {
-      val sides = WireUtils.getOccupiedSides(state)
-      if (!sides.all { it.opposite !in sides || sides.any { side -> side.axis != it.axis } }) return false
+    // TODO use this
+    fun validateIntegrity(state: BlockState): Boolean {
+        if (mustConnectInternally()) {
+            val sides = WireUtils.getOccupiedSides(state)
+            if (!sides.all { it.opposite !in sides || sides.any { side -> side.axis != it.axis } }) return false
+        }
+        return true
     }
-    return true
-  }
 
-  open fun overrideConnection(world: World, pos: BlockPos, state: BlockState, side: Direction, edge: Direction, current: ConnectionType?): ConnectionType? {
-    return current
-  }
-
-  private fun getStateForSide(oldState: BlockState, vararg side: Direction): BlockState =
-    if (side.isEmpty()) Blocks.AIR.defaultState else
-      Direction.values().fold(oldState) { state, s -> state.with(BaseWireProperties.PLACED_WIRES.getValue(s), s in side) }
-
-  override fun getStateForNeighborUpdate(state: BlockState, side: Direction, state1: BlockState, world: WorldAccess, pos: BlockPos, pos1: BlockPos): BlockState {
-    return getStateForSide(state, *WireUtils.getOccupiedSides(state).filter { it != side || getStateForSide(state, it).canPlaceAt(world, pos) }.toTypedArray())
-  }
-
-  override fun calcBlockBreakingDelta(state: BlockState, player: PlayerEntity, world: BlockView, pos: BlockPos): Float {
-    val f = state.getHardness(world, pos)
-    return if (f == -1.0f) {
-      0.0f
-    } else {
-      1.0f / f / 100.0f
+    open fun overrideConnection(world: World, pos: BlockPos, state: BlockState, side: Direction, edge: Direction, current: ConnectionType?): ConnectionType? {
+        return current
     }
-  }
+
+    private fun getStateForSide(oldState: BlockState, vararg side: Direction): BlockState =
+        if (side.isEmpty()) Blocks.AIR.defaultState else
+            Direction.values().fold(oldState) { state, s -> state.with(BaseWireProperties.PLACED_WIRES.getValue(s), s in side) }
+
+    override fun getStateForNeighborUpdate(state: BlockState, side: Direction, state1: BlockState, world: WorldAccess, pos: BlockPos, pos1: BlockPos): BlockState {
+        return getStateForSide(state, *WireUtils.getOccupiedSides(state).filter { it != side || getStateForSide(state, it).canPlaceAt(world, pos) }.toTypedArray())
+    }
+
+    override fun calcBlockBreakingDelta(state: BlockState, player: PlayerEntity, world: BlockView, pos: BlockPos): Float {
+        val f = state.getHardness(world, pos)
+        return if (f == -1.0f) {
+            0.0f
+        } else {
+            1.0f / f / 100.0f
+        }
+    }
 
 }
 
@@ -201,119 +201,119 @@ open class BaseWireBlockEntity(type: BlockEntityType<out BlockEntity>, pos: Bloc
         getWorld()?.updateListeners(getPos(), cachedState, cachedState, 3)
     }
 
-  // data structure:
-  // 2 bits for ConnectionType
-  // 4 ConnectionTypes + 1 "exists" bit -> 9 bits per face
-  // 6 faces -> 54 bits
+    // data structure:
+    // 2 bits for ConnectionType
+    // 4 ConnectionTypes + 1 "exists" bit -> 9 bits per face
+    // 6 faces -> 54 bits
 
-  private fun serConnections(): Long {
-    var l = 0L
-    for (c in connections) {
-      val list = Direction.values().filter { it.axis != c.side.axis }
-      val pos = 9 * c.side.id
-      l = 1L shl pos or l
-      for (s in c.connections) {
-        val pos = 9 * c.side.id + 2 * list.indexOf(s.edge) + 1
-        val bits = when (s.type) {
-          INTERNAL -> 1L; EXTERNAL -> 2L; CORNER -> 3L
+    private fun serConnections(): Long {
+        var l = 0L
+        for (c in connections) {
+            val list = Direction.values().filter { it.axis != c.side.axis }
+            val pos = 9 * c.side.id
+            l = 1L shl pos or l
+            for (s in c.connections) {
+                val pos = 9 * c.side.id + 2 * list.indexOf(s.edge) + 1
+                val bits = when (s.type) {
+                    INTERNAL -> 1L; EXTERNAL -> 2L; CORNER -> 3L
+                }
+                l = bits shl pos or l
+            }
         }
-        l = bits shl pos or l
-      }
+        return l
     }
-    return l
-  }
 
-  private fun deserConnections(packed: Long) {
-    connections = emptySet()
-    for (face in Direction.values()) {
-      if (packed shr (9 * face.id) and 1L != 0L) {
-        val list = mutableSetOf<Connection>()
-        for ((i, edge) in Direction.values().filter { it.axis != face.axis }.withIndex()) {
-          val type = when (packed shr (9 * face.id + 2 * i + 1) and 3L) {
-            1L -> INTERNAL; 2L -> EXTERNAL; 3L -> CORNER; else -> null
-          }
-          if (type != null) list += Connection(edge, type)
+    private fun deserConnections(packed: Long) {
+        connections = emptySet()
+        for (face in Direction.values()) {
+            if (packed shr (9 * face.id) and 1L != 0L) {
+                val list = mutableSetOf<Connection>()
+                for ((i, edge) in Direction.values().filter { it.axis != face.axis }.withIndex()) {
+                    val type = when (packed shr (9 * face.id + 2 * i + 1) and 3L) {
+                        1L -> INTERNAL; 2L -> EXTERNAL; 3L -> CORNER; else -> null
+                    }
+                    if (type != null) list += Connection(edge, type)
+                }
+                connections += WireRepr(face, list)
+            }
         }
-        connections += WireRepr(face, list)
-      }
     }
-  }
 
-  fun updateConnections(connections: Set<WireRepr>) {
-    if (connections != this.connections) {
-      this.connections = connections
-      markDirty()
-      getWorld()?.updateListeners(getPos(), cachedState, cachedState, 3)
+    fun updateConnections(connections: Set<WireRepr>) {
+        if (connections != this.connections) {
+            this.connections = connections
+            markDirty()
+            getWorld()?.updateListeners(getPos(), cachedState, cachedState, 3)
+        }
     }
-  }
 
 }
 
 open class BaseWireItem(block: BaseWireBlock, settings: Item.Settings) : BlockItem(block, settings) {
 
-  override fun place(ctx: ItemPlacementContext): ActionResult {
-    val state = this.getPlacementState(ctx) ?: return ActionResult.PASS
+    override fun place(ctx: ItemPlacementContext): ActionResult {
+        val state = this.getPlacementState(ctx) ?: return ActionResult.PASS
 
-    if (!doPlace(ctx, state)) return ActionResult.PASS
+        if (!doPlace(ctx, state)) return ActionResult.PASS
 
-    return ActionResult.SUCCESS
-  }
-
-  private fun tryFit(state: BlockState, new: BlockState): BlockState? {
-    if (state.block != block || state.block != new.block) return null
-    val v1 = WireUtils.getOccupiedSides(state)
-    val v2 = WireUtils.getOccupiedSides(new)
-    if ((v1 + v2).size != v1.size + v2.size) return null
-    return v2.fold(state) { s, side -> s.with(BaseWireProperties.PLACED_WIRES.getValue(side), true) }
-  }
-
-  private fun placePart(ctx: ItemPlacementContext, state: BlockState): Boolean {
-    val old = ctx.world.getBlockState(ctx.blockPos)
-    val combined = tryFit(old, state) ?: return false
-    return this.place(ctx, combined)
-  }
-
-  private fun placeBlock(ctx: ItemPlacementContext, state: BlockState): Boolean {
-    if (!ctx.canPlace()) return false
-    return this.place(ctx, state)
-  }
-
-  private fun doPlace(ctx: ItemPlacementContext, state: BlockState): Boolean {
-    if (
-      !placePart(ctx, state) &&
-      !placeBlock(ctx, state)
-    ) return false
-
-    val pos = ctx.blockPos
-    val world = ctx.world
-    val player = ctx.player
-    val stack = ctx.stack
-    val placedState = world.getBlockState(pos)
-    val block = placedState.block
-    if (block === state.block) {
-      block.onPlaced(world, pos, placedState, player, stack)
-      if (player is ServerPlayerEntity) {
-        Criteria.PLACED_BLOCK.trigger((player as ServerPlayerEntity?)!!, pos, stack)
-      }
+        return ActionResult.SUCCESS
     }
 
-    val sg = placedState.soundGroup
-    world.playSound(player, pos, this.getPlaceSound(placedState), SoundCategory.BLOCKS, (sg.getVolume() + 1.0f) / 2.0f, sg.getPitch() * 0.8f)
-    stack.decrement(1)
-    return true
-  }
+    private fun tryFit(state: BlockState, new: BlockState): BlockState? {
+        if (state.block != block || state.block != new.block) return null
+        val v1 = WireUtils.getOccupiedSides(state)
+        val v2 = WireUtils.getOccupiedSides(new)
+        if ((v1 + v2).size != v1.size + v2.size) return null
+        return v2.fold(state) { s, side -> s.with(BaseWireProperties.PLACED_WIRES.getValue(side), true) }
+    }
+
+    private fun placePart(ctx: ItemPlacementContext, state: BlockState): Boolean {
+        val old = ctx.world.getBlockState(ctx.blockPos)
+        val combined = tryFit(old, state) ?: return false
+        return this.place(ctx, combined)
+    }
+
+    private fun placeBlock(ctx: ItemPlacementContext, state: BlockState): Boolean {
+        if (!ctx.canPlace()) return false
+        return this.place(ctx, state)
+    }
+
+    private fun doPlace(ctx: ItemPlacementContext, state: BlockState): Boolean {
+        if (
+            !placePart(ctx, state) &&
+            !placeBlock(ctx, state)
+        ) return false
+
+        val pos = ctx.blockPos
+        val world = ctx.world
+        val player = ctx.player
+        val stack = ctx.stack
+        val placedState = world.getBlockState(pos)
+        val block = placedState.block
+        if (block === state.block) {
+            block.onPlaced(world, pos, placedState, player, stack)
+            if (player is ServerPlayerEntity) {
+                Criteria.PLACED_BLOCK.trigger((player as ServerPlayerEntity?)!!, pos, stack)
+            }
+        }
+
+        val sg = placedState.soundGroup
+        world.playSound(player, pos, this.getPlaceSound(placedState), SoundCategory.BLOCKS, (sg.getVolume() + 1.0f) / 2.0f, sg.getPitch() * 0.8f)
+        stack.decrement(1)
+        return true
+    }
 
 }
 
 object BaseWireProperties {
-  val PLACED_WIRES = mapOf(
-    UP to Properties.UP,
-    DOWN to Properties.DOWN,
-    NORTH to Properties.NORTH,
-    SOUTH to Properties.SOUTH,
-    EAST to Properties.EAST,
-    WEST to Properties.WEST
-  )
+    val PLACED_WIRES = mapOf(
+        UP to Properties.UP,
+        DOWN to Properties.DOWN,
+        NORTH to Properties.NORTH,
+        SOUTH to Properties.SOUTH,
+        EAST to Properties.EAST,
+        WEST to Properties.WEST
+    )
 }
 
 data class WireRepr(val side: Direction, val connections: Set<Connection>)
@@ -321,81 +321,81 @@ data class WireRepr(val side: Direction, val connections: Set<Connection>)
 data class Connection(val edge: Direction, val type: ConnectionType)
 
 enum class ConnectionType {
-  INTERNAL,
-  EXTERNAL,
-  CORNER,
+    INTERNAL,
+    EXTERNAL,
+    CORNER,
 }
 
 object WireUtils {
-  @Suppress("UNCHECKED_CAST")
-  fun rayTrace(state: BlockState, pos: BlockPos, from: Vec3d, to: Vec3d): Pair<Direction, BlockHitResult>? {
-    val block = state.block as BaseWireBlock
+    @Suppress("UNCHECKED_CAST")
+    fun rayTrace(state: BlockState, pos: BlockPos, from: Vec3d, to: Vec3d): Pair<Direction, BlockHitResult>? {
+        val block = state.block as BaseWireBlock
 
-    return BaseWireProperties.PLACED_WIRES.entries.asSequence()
-        .filter { (_, prop) -> state[prop] }
-        .map { (a, _) -> Pair(a, block.boxes.getValue(a)) }
-        .map { (a, s) -> Pair(a, s.raycast(from, to, pos)) }
-        .filter { it.second != null }
-        .minByOrNull { (_, hitResult) -> hitResult!!.pos.squaredDistanceTo(from) }
-      as Pair<Direction, BlockHitResult>?
-  }
-
-  fun getShapeForSide(boxHeight: Double, facing: Direction): VoxelShape {
-    return when (facing) {
-      DOWN -> VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, boxHeight, 1.0)
-      UP -> VoxelShapes.cuboid(0.0, 1 - boxHeight, 0.0, 1.0, 1.0, 1.0)
-      NORTH -> VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 1.0, boxHeight)
-      SOUTH -> VoxelShapes.cuboid(0.0, 0.0, 1 - boxHeight, 1.0, 1.0, 1.0)
-      WEST -> VoxelShapes.cuboid(0.0, 0.0, 0.0, boxHeight, 1.0, 1.0)
-      EAST -> VoxelShapes.cuboid(1 - boxHeight, 0.0, 0.0, 1.0, 1.0, 1.0)
+        return BaseWireProperties.PLACED_WIRES.entries.asSequence()
+            .filter { (_, prop) -> state[prop] }
+            .map { (a, _) -> Pair(a, block.boxes.getValue(a)) }
+            .map { (a, s) -> Pair(a, s.raycast(from, to, pos)) }
+            .filter { it.second != null }
+            .minByOrNull { (_, hitResult) -> hitResult!!.pos.squaredDistanceTo(from) }
+            as Pair<Direction, BlockHitResult>?
     }
-  }
 
-  fun generateShapes(boxHeight: Double): Map<Direction, VoxelShape> {
-    return Direction.values().asIterable().associateWith { getShapeForSide(boxHeight, it) }
-  }
-
-  fun getOccupiedSides(state: BlockState): Set<Direction> {
-    return BaseWireProperties.PLACED_WIRES.entries
-      .filter { (_, prop) -> state[prop] }
-      .map { it.key }
-      .toSet()
-  }
-
-  fun updateClient(world: ServerWorld, pos: BlockPos) {
-    val be = world.getBlockEntity(pos) as? BaseWireBlockEntity ?: return
-    val state = world.getBlockState(pos)
-    val wb = state.block as BaseWireBlock
-    val net = world.getWireNetworkState().controller
-
-    val nodes1 = net.getNodesAt(pos)
-      .filter { it.data.ext is WirePartExtType }
-      .groupBy { (it.data.ext as WirePartExtType).side }
-      .mapValues { (side, nodes) ->
-        val c = nodes.flatMap { node ->
-          node.connections.mapNotNull {
-            val other = it.other(node)
-            if (node.data.pos == other.data.pos && other.data.ext is WirePartExtType) Connection(other.data.ext.side, INTERNAL)
-            else other.data.pos.subtract(node.data.pos.offset(side)).let { Direction.fromVector(it.x, it.y, it.z) }?.let { Connection(it, CORNER) }
-                 ?: other.data.pos.subtract(node.data.pos).let { Direction.fromVector(it.x, it.y, it.z) }?.let { Connection(it, EXTERNAL) }
-          }
+    fun getShapeForSide(boxHeight: Double, facing: Direction): VoxelShape {
+        return when (facing) {
+            DOWN -> VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, boxHeight, 1.0)
+            UP -> VoxelShapes.cuboid(0.0, 1 - boxHeight, 0.0, 1.0, 1.0, 1.0)
+            NORTH -> VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 1.0, boxHeight)
+            SOUTH -> VoxelShapes.cuboid(0.0, 0.0, 1 - boxHeight, 1.0, 1.0, 1.0)
+            WEST -> VoxelShapes.cuboid(0.0, 0.0, 0.0, boxHeight, 1.0, 1.0)
+            EAST -> VoxelShapes.cuboid(1 - boxHeight, 0.0, 0.0, 1.0, 1.0, 1.0)
         }
-        c.groupBy { it.edge }.mapNotNull { (_, v) -> v.distinct().singleOrNull() }
-      }
+    }
 
-    val connections = getOccupiedSides(state)
-      .map { side -> WireRepr(side, nodes1[side]?.toSet().orEmpty()) }
-      .map { (side, connections) ->
-        val nonConnected = Direction.values().filter { it.axis != side.axis } - connections.map { it.edge }
-        val new =
-          (connections.mapNotNull { wb.overrideConnection(world, pos, state, side, it.edge, it.type)?.let { r -> Connection(it.edge, r) } } +
-           nonConnected.mapNotNull { wb.overrideConnection(world, pos, state, side, it, null)?.let { r -> Connection(it, r) } })
+    fun generateShapes(boxHeight: Double): Map<Direction, VoxelShape> {
+        return Direction.values().asIterable().associateWith { getShapeForSide(boxHeight, it) }
+    }
+
+    fun getOccupiedSides(state: BlockState): Set<Direction> {
+        return BaseWireProperties.PLACED_WIRES.entries
+            .filter { (_, prop) -> state[prop] }
+            .map { it.key }
             .toSet()
-        WireRepr(side, new)
-      }
-      .toSet()
+    }
 
-    be.updateConnections(connections)
-  }
+    fun updateClient(world: ServerWorld, pos: BlockPos) {
+        val be = world.getBlockEntity(pos) as? BaseWireBlockEntity ?: return
+        val state = world.getBlockState(pos)
+        val wb = state.block as BaseWireBlock
+        val net = world.getWireNetworkState().controller
+
+        val nodes1 = net.getNodesAt(pos)
+            .filter { it.data.ext is WirePartExtType }
+            .groupBy { (it.data.ext as WirePartExtType).side }
+            .mapValues { (side, nodes) ->
+                val c = nodes.flatMap { node ->
+                    node.connections.mapNotNull {
+                        val other = it.other(node)
+                        if (node.data.pos == other.data.pos && other.data.ext is WirePartExtType) Connection(other.data.ext.side, INTERNAL)
+                        else other.data.pos.subtract(node.data.pos.offset(side)).let { Direction.fromVector(it.x, it.y, it.z) }?.let { Connection(it, CORNER) }
+                            ?: other.data.pos.subtract(node.data.pos).let { Direction.fromVector(it.x, it.y, it.z) }?.let { Connection(it, EXTERNAL) }
+                    }
+                }
+                c.groupBy { it.edge }.mapNotNull { (_, v) -> v.distinct().singleOrNull() }
+            }
+
+        val connections = getOccupiedSides(state)
+            .map { side -> WireRepr(side, nodes1[side]?.toSet().orEmpty()) }
+            .map { (side, connections) ->
+                val nonConnected = Direction.values().filter { it.axis != side.axis } - connections.map { it.edge }
+                val new =
+                    (connections.mapNotNull { wb.overrideConnection(world, pos, state, side, it.edge, it.type)?.let { r -> Connection(it.edge, r) } } +
+                        nonConnected.mapNotNull { wb.overrideConnection(world, pos, state, side, it, null)?.let { r -> Connection(it, r) } })
+                        .toSet()
+                WireRepr(side, new)
+            }
+            .toSet()
+
+        be.updateConnections(connections)
+    }
 
 }

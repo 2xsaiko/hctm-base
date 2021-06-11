@@ -8,8 +8,8 @@ import net.minecraft.util.Identifier
 
 object ItemGroups {
 
-  val ALL: ItemGroup = FabricItemGroupBuilder.create(Identifier(MOD_ID, "all"))
-    .icon { Items.SCREWDRIVER.makeStack() }
-    .build()
+    val ALL: ItemGroup = FabricItemGroupBuilder.create(Identifier(MOD_ID, "all"))
+        .icon { Items.SCREWDRIVER.makeStack() }
+        .build()
 
 }

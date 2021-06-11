@@ -8,12 +8,12 @@ import net.fabricmc.loader.api.FabricLoader
 
 object HCTMClient : ClientModInitializer {
 
-  override fun onInitializeClient() {
-    Packets.Client.register()
+    override fun onInitializeClient() {
+        Packets.Client.register()
 
-    if (FabricLoader.getInstance().isModLoaded("canvas")) {
-      RenderPlatform.active = CanvasRenderPlatform
+        if (FabricLoader.getInstance().isModLoaded("canvas")) {
+            RenderPlatform.active = CanvasRenderPlatform
+        }
     }
-  }
 
 }

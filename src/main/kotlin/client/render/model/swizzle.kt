@@ -22,13 +22,14 @@ import net.dblsaiko.qcommon.croco.Vec3
 //val Vec3.zx: Vec2
 //  get() = Vec2(z, x)
 val Vec3.xy: Vec2
-  get() = Vec2(x, y)
+    get() = Vec2(x, y)
+
 //val Vec3.yy: Vec2
 //  get() = Vec2(y, y)
 val Vec3.zy: Vec2
-  get() = Vec2(z, y)
+    get() = Vec2(z, y)
 val Vec3.xz: Vec2
-  get() = Vec2(x, z)
+    get() = Vec2(x, z)
 //val Vec3.yz: Vec2
 //  get() = Vec2(y, z)
 //val Vec3.zz: Vec2

@@ -12,21 +12,21 @@ import net.minecraft.world.World
 
 object ClientNetworkState {
 
-  private val caches = mutableMapOf<RegistryKey<World>, Entry>()
+    private val caches = mutableMapOf<RegistryKey<World>, Entry>()
 
-  fun request(world: World): WireNetworkController? {
-    if (world !is ServerWorld) error("Yeah let's not do that.")
+    fun request(world: World): WireNetworkController? {
+        if (world !is ServerWorld) error("Yeah let's not do that.")
 
-    val worldKey = world.registryKey
+        val worldKey = world.registryKey
 
-    if (caches[worldKey]?.isExpired() != false) {
-      val buf = PacketByteBuf(Unpooled.buffer())
-        buf.writeString(worldKey.value.toString())
-        ClientPlayNetworking.send(Packets.Server.DEBUG_NET_REQUEST, buf)
+        if (caches[worldKey]?.isExpired() != false) {
+            val buf = PacketByteBuf(Unpooled.buffer())
+            buf.writeString(worldKey.value.toString())
+            ClientPlayNetworking.send(Packets.Server.DEBUG_NET_REQUEST, buf)
+        }
+
+        return caches[worldKey]?.controller
     }
-
-    return caches[worldKey]?.controller
-  }
 
     fun update(dt: RegistryKey<World>, tag: NbtCompound) {
         caches[dt] = Entry(WireNetworkController.fromTag(tag))
@@ -35,7 +35,7 @@ object ClientNetworkState {
 }
 
 private data class Entry(val controller: WireNetworkController, val created: Long = utime()) {
-  fun isExpired() = utime() - created > 1
+    fun isExpired() = utime() - created > 1
 }
 
 private fun utime() = System.currentTimeMillis() / 1000

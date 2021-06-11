@@ -8,6 +8,6 @@ import net.minecraft.world.World
 
 interface BlockCustomBreak {
 
-  fun tryBreak(state: BlockState, pos: BlockPos, world: World, player: PlayerEntity, blockEntity: BlockEntity?): Boolean
+    fun tryBreak(state: BlockState, pos: BlockPos, world: World, player: PlayerEntity, blockEntity: BlockEntity?): Boolean
 
 }

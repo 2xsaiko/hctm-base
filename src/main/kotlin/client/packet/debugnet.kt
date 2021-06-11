@@ -10,14 +10,14 @@ import net.minecraft.util.registry.Registry
 import net.minecraft.util.registry.RegistryKey
 
 fun onDebugNetUpdateResponse(client: MinecraftClient, handler: ClientPlayNetworkHandler, buf: PacketByteBuf, responseSender: PacketSender) {
-  val dim = Identifier(buf.readString())
+    val dim = Identifier(buf.readString())
 
-  val server = MinecraftClient.getInstance().server ?: return
-  val type = RegistryKey.of(Registry.WORLD_KEY, dim)
+    val server = MinecraftClient.getInstance().server ?: return
+    val type = RegistryKey.of(Registry.WORLD_KEY, dim)
 
-  val tag = buf.readNbt()!!
+    val tag = buf.readNbt()!!
 
-  client.execute {
-    ClientNetworkState.update(type, tag)
-  }
+    client.execute {
+        ClientNetworkState.update(type, tag)
+    }
 }

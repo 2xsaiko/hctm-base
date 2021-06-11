@@ -7,6 +7,6 @@ import net.minecraft.util.math.Vec3d
 
 interface BlockAdvancedShape {
 
-  fun rayTrace(state: BlockState, pos: BlockPos, from: Vec3d, to: Vec3d): BlockHitResult?
+    fun rayTrace(state: BlockState, pos: BlockPos, from: Vec3d, to: Vec3d): BlockHitResult?
 
 }

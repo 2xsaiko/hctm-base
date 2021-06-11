@@ -10,13 +10,13 @@ const val MOD_ID = "hctm-base"
 
 object HCTM : ModInitializer {
 
-  override fun onInitialize() {
-    Items.register()
-    Packets.Server.register()
+    override fun onInitialize() {
+        Items.register()
+        Packets.Server.register()
 
-    ServerTickCallback.EVENT.register(ServerTickCallback {
-      it.worlds.forEach { it.getWireNetworkState().controller.flushUpdates() }
-    })
-  }
+        ServerTickCallback.EVENT.register(ServerTickCallback {
+            it.worlds.forEach { it.getWireNetworkState().controller.flushUpdates() }
+        })
+    }
 
 }

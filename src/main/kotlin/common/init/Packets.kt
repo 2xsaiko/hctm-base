@@ -9,24 +9,24 @@ import net.minecraft.util.Identifier
 
 object Packets {
 
-  object Client {
+    object Client {
 
-    val DEBUG_NET_RESPONSE = Identifier(MOD_ID, "debug_net_recv")
+        val DEBUG_NET_RESPONSE = Identifier(MOD_ID, "debug_net_recv")
 
-    fun register() {
-      ClientPlayNetworking.registerGlobalReceiver(DEBUG_NET_RESPONSE, ::onDebugNetUpdateResponse)
+        fun register() {
+            ClientPlayNetworking.registerGlobalReceiver(DEBUG_NET_RESPONSE, ::onDebugNetUpdateResponse)
+        }
+
     }
 
-  }
+    object Server {
 
-  object Server {
+        val DEBUG_NET_REQUEST = Identifier(MOD_ID, "debug_net_req")
 
-    val DEBUG_NET_REQUEST = Identifier(MOD_ID, "debug_net_req")
+        fun register() {
+            ServerPlayNetworking.registerGlobalReceiver(DEBUG_NET_REQUEST, ::onDebugNetUpdateRequest)
+        }
 
-    fun register() {
-      ServerPlayNetworking.registerGlobalReceiver(DEBUG_NET_REQUEST, ::onDebugNetUpdateRequest)
     }
-
-  }
 
 }

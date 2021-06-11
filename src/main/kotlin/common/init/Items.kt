@@ -13,23 +13,23 @@ import kotlin.properties.ReadOnlyProperty
 
 object Items {
 
-  private val tasks = mutableListOf<() -> Unit>()
+    private val tasks = mutableListOf<() -> Unit>()
 
-  val SCREWDRIVER by create("screwdriver", Item(Settings().group(ItemGroups.ALL)))
+    val SCREWDRIVER by create("screwdriver", Item(Settings().group(ItemGroups.ALL)))
 
-  private fun <T : Block> create(name: String, block: T): ReadOnlyProperty<Items, BlockItem> {
-    return create(name, BlockItem(block, Settings().group(ItemGroup.REDSTONE)))
-  }
+    private fun <T : Block> create(name: String, block: T): ReadOnlyProperty<Items, BlockItem> {
+        return create(name, BlockItem(block, Settings().group(ItemGroup.REDSTONE)))
+    }
 
-  private fun <T : Item> create(name: String, item: T): ReadOnlyProperty<Items, T> {
-    var regItem: T? = null
-    tasks += { regItem = Registry.register(Registry.ITEM, Identifier(MOD_ID, name), item) }
-    return delegatedNotNull { regItem }
-  }
+    private fun <T : Item> create(name: String, item: T): ReadOnlyProperty<Items, T> {
+        var regItem: T? = null
+        tasks += { regItem = Registry.register(Registry.ITEM, Identifier(MOD_ID, name), item) }
+        return delegatedNotNull { regItem }
+    }
 
-  internal fun register() {
-    tasks.forEach { it() }
-    tasks.clear()
-  }
+    internal fun register() {
+        tasks.forEach { it() }
+        tasks.clear()
+    }
 
 }
