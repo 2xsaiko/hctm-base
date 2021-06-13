@@ -15,8 +15,8 @@
   "icon": "assets/hctm-base/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [{ "value": "net.dblsaiko.hctm.HCTM", "adapter": "kotlin" }],
-    "client": [{ "value": "net.dblsaiko.hctm.client.HCTMClient", "adapter": "kotlin" }]
+    "main": ["net.dblsaiko.hctm.HctmBase::initialize"],
+    "client": ["net.dblsaiko.hctm.client.Init::initialize"]
   },
   "mixins": ["hctm.mixins.json"],
   "depends": {

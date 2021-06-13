@@ -1,6 +1,6 @@
 package net.dblsaiko.hctm.common.init
 
-import net.dblsaiko.hctm.MOD_ID
+import net.dblsaiko.hctm.HctmBase.MOD_ID
 import net.dblsaiko.hctm.common.util.delegatedNotNull
 import net.minecraft.block.Block
 import net.minecraft.item.BlockItem
@@ -27,7 +27,7 @@ object Items {
         return delegatedNotNull { regItem }
     }
 
-    internal fun register() {
+    fun register() {
         tasks.forEach { it() }
         tasks.clear()
     }

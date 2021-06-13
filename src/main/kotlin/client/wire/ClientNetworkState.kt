@@ -1,11 +1,9 @@
 package net.dblsaiko.hctm.client.wire
 
-import io.netty.buffer.Unpooled
-import net.dblsaiko.hctm.common.init.Packets
+import net.dblsaiko.hctm.HctmBase
 import net.dblsaiko.hctm.common.wire.WireNetworkController
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.dblsaiko.hctm.net.DebugNetRequest
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.registry.RegistryKey
 import net.minecraft.world.World
@@ -20,9 +18,7 @@ object ClientNetworkState {
         val worldKey = world.registryKey
 
         if (caches[worldKey]?.isExpired() != false) {
-            val buf = PacketByteBuf(Unpooled.buffer())
-            buf.writeString(worldKey.value.toString())
-            ClientPlayNetworking.send(Packets.Server.DEBUG_NET_REQUEST, buf)
+            HctmBase.getInstance().clientNetHandler.debugNetRequest.send(DebugNetRequest(worldKey.value))
         }
 
         return caches[worldKey]?.controller

@@ -1,6 +1,6 @@
 package net.dblsaiko.hctm.common.init
 
-import net.dblsaiko.hctm.MOD_ID
+import net.dblsaiko.hctm.HctmBase.MOD_ID
 import net.dblsaiko.hctm.common.util.ext.makeStack
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder
 import net.minecraft.item.ItemGroup
