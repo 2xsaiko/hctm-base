@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": ["net.dblsaiko.hctm.HctmBase::initialize"],
-    "client": ["net.dblsaiko.hctm.client.Init::initialize"]
+    "client": ["net.dblsaiko.hctm.client.HctmBaseClient::initialize"]
   },
   "mixins": ["hctm.mixins.json"],
   "depends": {

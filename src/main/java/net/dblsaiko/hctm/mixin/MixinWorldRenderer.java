@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.dblsaiko.hctm.common.block.ext.BlockAdvancedShape;
+import net.dblsaiko.hctm.block.BlockAdvancedShape;
 
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {

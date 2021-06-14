@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import net.dblsaiko.hctm.common.block.ext.BlockCustomBreak;
+import net.dblsaiko.hctm.block.BlockCustomBreak;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class MixinClientPlayerInteractionManager {

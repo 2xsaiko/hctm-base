@@ -2,6 +2,8 @@ package net.dblsaiko.hctm.init.net;
 
 import net.minecraft.util.Identifier;
 import com.mojang.serialization.Codec;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class ClientboundMsgDef<T> {
     private final Identifier id;
@@ -28,6 +30,10 @@ public class ClientboundMsgDef<T> {
     }
 
     public void registerHandler() {
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+            throw new IllegalStateException("Can't register clientbound message on dedicated server");
+        }
+
         var handler = this.handler;
 
         if (handler == null) {

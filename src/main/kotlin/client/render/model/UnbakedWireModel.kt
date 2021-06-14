@@ -368,7 +368,7 @@ private data class Quad(val v1: Vertex, val v2: Vertex, val v3: Vertex, val v4: 
 
         for ((i, q) in listOf(v1, v2, v3, v4).withIndex()) {
             qe.pos(i, q.x, q.y, q.z)
-            qe.spriteFix(i, 0, q.u, q.v)
+            RenderPlatform.getInstance().spriteFix(qe, i, 0, q.u, q.v)
         }
 
         qe.material(mat)
