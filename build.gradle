@@ -133,4 +133,4 @@ idea.project?.settings {
     }
 }
 
-apply from: 'https://raw.githubusercontent.com/2xsaiko/gradle-tools/master/publish/publish-slim.gradle'
+apply from: 'https://dblsaiko.net/pub/gradle/publish-slim.gradle'
