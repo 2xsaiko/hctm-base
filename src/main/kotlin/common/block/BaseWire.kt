@@ -1,10 +1,10 @@
 package net.dblsaiko.hctm.common.block
 
 import net.dblsaiko.hctm.block.BlockCustomBreak
+import net.dblsaiko.hctm.block.BlockPartProvider
 import net.dblsaiko.hctm.common.block.ConnectionType.CORNER
 import net.dblsaiko.hctm.common.block.ConnectionType.EXTERNAL
 import net.dblsaiko.hctm.common.block.ConnectionType.INTERNAL
-import net.dblsaiko.hctm.common.wire.BlockPartProvider
 import net.dblsaiko.hctm.common.wire.PartExt
 import net.dblsaiko.hctm.common.wire.WirePartExtType
 import net.dblsaiko.hctm.common.wire.getWireNetworkState

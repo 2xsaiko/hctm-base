@@ -1,9 +1,11 @@
 package net.dblsaiko.hctm.common.wire
 
 import com.google.common.collect.HashMultimap
+import net.dblsaiko.hctm.block.BlockPartProvider
 import net.dblsaiko.hctm.common.graph.Graph
 import net.dblsaiko.hctm.common.graph.Link
 import net.dblsaiko.hctm.common.graph.Node
+import net.dblsaiko.hctm.wire.NetworkPart
 import net.fabricmc.fabric.api.util.NbtType
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
@@ -11,9 +13,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.registry.Registry
 import net.minecraft.world.PersistentState
 import net.minecraft.world.World
 import net.minecraft.world.dimension.DimensionType
@@ -330,35 +330,6 @@ class Network(val controller: WireNetworkController, val id: UUID) {
         }
     }
 
-}
-
-data class NetworkPart<T : PartExt>(var pos: BlockPos, val ext: T) {
-    fun toTag(block: Block, tag: NbtCompound): NbtCompound {
-        tag.putInt("x", pos.x)
-        tag.putInt("y", pos.y)
-        tag.putInt("z", pos.z)
-        tag.put("ext", ext.toTag())
-        tag.putString("block", Registry.BLOCK.getId(block).toString())
-        return tag
-    }
-
-    companion object {
-        fun fromTag(tag: NbtCompound): NetworkPart<PartExt>? {
-            val block = Registry.BLOCK[Identifier(tag.getString("block"))]
-            val extTag = tag["ext"]
-            if (block is BlockPartProvider && extTag != null) {
-                val ext = block.createExtFromTag(extTag) ?: return null
-                val pos = BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"))
-                return NetworkPart(pos, ext)
-            } else return null
-        }
-    }
-}
-
-interface BlockPartProvider {
-    fun getPartsInBlock(world: World, pos: BlockPos, state: BlockState): Set<PartExt>
-
-    fun createExtFromTag(tag: NbtElement): PartExt?
 }
 
 /**
