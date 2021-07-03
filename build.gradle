@@ -35,7 +35,7 @@ apply from: 'https://dblsaiko.net/pub/gradle/autoversion.gradle'
 
 repositories {
     maven { url 'https://maven.dblsaiko.net' }
-    maven { url 'https://maven.terraformersmc.com/releases/' }
+    // maven { url 'https://maven.terraformersmc.com/releases/' }
 }
 
 dependencies {
