@@ -65,9 +65,9 @@ dependencies {
     include group: "net.dblsaiko.qcommon.croco", name: "croco", version: croco_version
     
     modRuntime group: 'net.dblsaiko', name: 'winwonders', version: '0.1.2-4'
-    modRuntime(group: 'com.terraformersmc', name: 'modmenu', version: '2.0.0-beta.7') {
-        exclude module: 'fabric-api'
-    }
+    // modRuntime(group: 'com.terraformersmc', name: 'modmenu', version: '2.0.0-beta.7') {
+    //     exclude module: 'fabric-api'
+    // }
 
     // For model bake failure fix with Canvas
     modCompileOnly("grondag:canvas-mc116:1.0.1267") {
