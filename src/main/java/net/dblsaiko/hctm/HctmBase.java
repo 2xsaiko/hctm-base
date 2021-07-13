@@ -7,7 +7,6 @@ import java.util.Objects;
 import net.dblsaiko.hctm.common.wire.WireNetworkStateKt;
 import net.dblsaiko.hctm.init.ItemGroups;
 import net.dblsaiko.hctm.init.Items;
-import net.dblsaiko.hctm.net.ClientNetHandler;
 import net.dblsaiko.hctm.net.Packets;
 import net.dblsaiko.hctm.net.ServerNetHandler;
 
@@ -19,9 +18,8 @@ public class HctmBase {
     public final ItemGroups itemGroups = new ItemGroups();
     public final Items items = new Items(this.itemGroups);
 
-    private final Packets packets = new Packets();
+    public final Packets packets = new Packets();
     public final ServerNetHandler serverNetHandler = new ServerNetHandler(this.packets);
-    public final ClientNetHandler clientNetHandler = new ClientNetHandler(this.packets);
 
     private HctmBase() {}
 

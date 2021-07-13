@@ -1,6 +1,6 @@
 package net.dblsaiko.hctm.client.wire
 
-import net.dblsaiko.hctm.HctmBase
+import net.dblsaiko.hctm.client.HctmBaseClient
 import net.dblsaiko.hctm.common.wire.WireNetworkController
 import net.dblsaiko.hctm.net.DebugNetRequest
 import net.minecraft.nbt.NbtCompound
@@ -18,7 +18,7 @@ object ClientNetworkState {
         val worldKey = world.registryKey
 
         if (caches[worldKey]?.isExpired() != false) {
-            HctmBase.getInstance().clientNetHandler.debugNetRequest.send(DebugNetRequest(worldKey.value))
+            HctmBaseClient.getInstance().clientNetHandler.debugNetRequest.send(DebugNetRequest(worldKey.value))
         }
 
         return caches[worldKey]?.controller
