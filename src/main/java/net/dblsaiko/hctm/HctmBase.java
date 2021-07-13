@@ -1,10 +1,12 @@
 package net.dblsaiko.hctm;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import java.util.Objects;
 
 import net.dblsaiko.hctm.common.wire.WireNetworkStateKt;
+import net.dblsaiko.hctm.graph.GraphManager;
 import net.dblsaiko.hctm.init.ItemGroups;
 import net.dblsaiko.hctm.init.Items;
 import net.dblsaiko.hctm.net.ClientNetHandler;
@@ -32,6 +34,14 @@ public class HctmBase {
 
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             WireNetworkStateKt.getWireNetworkState(world).getController().flushUpdates();
+        });
+
+        ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
+            GraphManager.get(world).onChunkLoad(chunk);
+        });
+
+        ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
+            GraphManager.get(world).onChunkUnload(chunk);
         });
 
         INSTANCE = mod;
