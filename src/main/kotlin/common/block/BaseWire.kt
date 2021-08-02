@@ -356,6 +356,10 @@ object WireUtils {
     }
 
     fun getOccupiedSides(state: BlockState): Set<Direction> {
+        if (state.block !is BaseWireBlock) {
+            return emptySet()
+        }
+
         return BaseWireProperties.PLACED_WIRES.entries
             .filter { (_, prop) -> state[prop] }
             .map { it.key }
