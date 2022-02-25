@@ -8,7 +8,6 @@ import net.dblsaiko.hctm.common.wire.BlockPartProvider
 import net.dblsaiko.hctm.common.wire.PartExt
 import net.dblsaiko.hctm.common.wire.WirePartExtType
 import net.dblsaiko.hctm.common.wire.getWireNetworkState
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable
 import net.minecraft.advancement.criterion.Criteria
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
@@ -26,6 +25,7 @@ import net.minecraft.item.ItemPlacementContext
 import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
@@ -176,29 +176,32 @@ abstract class SingleBaseWireBlock(settings: AbstractBlock.Settings, height: Flo
 
 }
 
-open class BaseWireBlockEntity(type: BlockEntityType<out BlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state), BlockEntityClientSerializable {
+open class BaseWireBlockEntity(type: BlockEntityType<out BlockEntity>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state) {
 
     var connections: Set<WireRepr> = emptySet()
         private set
 
-    override fun writeNbt(tag: NbtCompound): NbtCompound {
+    override fun writeNbt(tag: NbtCompound) {
+        super.writeNbt(tag)
         tag.putLong("c", serConnections())
-        return super.writeNbt(tag)
     }
 
     override fun readNbt(tag: NbtCompound) {
         super.readNbt(tag)
         deserConnections(tag.getLong("c"))
+        val world = getWorld()
+
+        if (world != null && world.isClient()) {
+            world.updateListeners(getPos(), cachedState, cachedState, 3)
+        }
     }
 
-    override fun toClientTag(tag: NbtCompound): NbtCompound {
-        tag.putLong("c", serConnections())
-        return tag
+    override fun toUpdatePacket(): BlockEntityUpdateS2CPacket {
+        return BlockEntityUpdateS2CPacket.create(this)
     }
 
-    override fun fromClientTag(tag: NbtCompound) {
-        deserConnections(tag.getLong("c"))
-        getWorld()?.updateListeners(getPos(), cachedState, cachedState, 3)
+    override fun toInitialChunkDataNbt(): NbtCompound {
+        return createNbt()
     }
 
     // data structure:

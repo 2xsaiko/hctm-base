@@ -134,7 +134,7 @@ class WireModel(
         )
     }
 
-    override fun getSprite() = particle
+    override fun getParticleSprite() = particle
 
     override fun getTransformation() = ModelHelper.MODEL_TRANSFORM_BLOCK
 
