@@ -16,7 +16,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.registry.Registry
 import net.minecraft.world.PersistentState
 import net.minecraft.world.World
-import net.minecraft.world.dimension.DimensionType
 import java.util.*
 
 typealias NetNode = Node<NetworkPart<out PartExt>, Nothing?>
@@ -39,8 +38,6 @@ class WireNetworkState(val world: ServerWorld) : PersistentState() {
             state.controller.changeListener = state::markDirty
             return state
         }
-
-        fun nameFor(dimension: DimensionType) = "wirenet${dimension.suffix}"
     }
 }
 
@@ -393,10 +390,9 @@ class NodeView(world: ServerWorld) {
 }
 
 fun ServerWorld.getWireNetworkState(): WireNetworkState {
-    val dimension = getDimension()
     return persistentStateManager.getOrCreate(
         { WireNetworkState.load(it, this) },
         { WireNetworkState(this) },
-        WireNetworkState.nameFor(dimension)
+        "wirenet"
     )
 }
